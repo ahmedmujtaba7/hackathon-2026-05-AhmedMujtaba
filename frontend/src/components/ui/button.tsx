@@ -29,14 +29,16 @@ const variantClasses: Record<ButtonVariant, string> = {
     'hover:shadow-crimson-sm',
   ].join(' '),
   outline: [
-    'bg-transparent text-foreground font-bold tracking-widest uppercase',
-    'border border-border-bright',
-    'hover:border-accent hover:text-accent',
+    'bg-transparent font-bold tracking-widest uppercase',
+    'border border-[rgba(237,230,214,0.35)] text-foreground/80',
+    'hover:border-accent hover:text-accent hover:bg-accent/5',
+    'transition-colors duration-200',
   ].join(' '),
   ghost: [
-    'bg-transparent text-muted font-semibold tracking-widest uppercase',
-    'border border-transparent',
+    'bg-transparent font-semibold tracking-widest uppercase',
+    'border border-transparent text-foreground/65',
     'hover:text-foreground hover:bg-surface-2',
+    'transition-colors duration-200',
   ].join(' '),
 };
 

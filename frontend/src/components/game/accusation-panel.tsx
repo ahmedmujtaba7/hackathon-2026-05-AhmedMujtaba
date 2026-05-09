@@ -222,16 +222,40 @@ export function AccusationPanel({
                     onClick={() => setSelectedId(s.id)}
                     disabled={loading}
                     className={[
-                      'w-full text-left rounded border px-4 py-3 transition-all duration-150',
-                      selectedId === s.id
-                        ? 'border-danger bg-danger/10 text-foreground'
-                        : 'border-border hover:border-danger/50 text-muted hover:text-foreground',
-                      'font-serif text-sm',
+                      'w-full text-left rounded-lg px-4 py-3 transition-all duration-150 font-serif text-sm',
                       loading ? 'opacity-50 cursor-not-allowed' : '',
                     ].join(' ')}
+                    style={
+                      selectedId === s.id
+                        ? {
+                            border: '1px solid rgba(155,34,38,0.70)',
+                            background: 'rgba(155,34,38,0.12)',
+                            color: '#f5e6c8',
+                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                          }
+                        : {
+                            border: '1px solid rgba(237,230,214,0.18)',
+                            background: 'rgba(0,0,0,0.30)',
+                            color: 'rgba(237,230,214,0.75)',
+                          }
+                    }
+                    onMouseEnter={(e) => {
+                      if (selectedId !== s.id) {
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(155,34,38,0.45)';
+                        (e.currentTarget as HTMLButtonElement).style.color = '#f5e6c8';
+                        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(155,34,38,0.06)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedId !== s.id) {
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(237,230,214,0.18)';
+                        (e.currentTarget as HTMLButtonElement).style.color = 'rgba(237,230,214,0.75)';
+                        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,0,0,0.30)';
+                      }
+                    }}
                   >
                     <span className="font-semibold">{s.name}</span>
-                    <span className="text-xs font-mono ml-2 opacity-70">
+                    <span className="text-xs font-mono ml-2" style={{ color: 'rgba(237,230,214,0.50)' }}>
                       {s.relationship_to_victim}
                     </span>
                   </button>

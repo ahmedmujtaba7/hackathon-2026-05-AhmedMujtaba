@@ -19,12 +19,16 @@ html {
   scroll-behavior: smooth;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   background-color: #060608;
   color: #ede6d6;
   font-family: 'Playfair Display', Georgia, Cambria, 'Times New Roman', serif;
-  min-height: 100dvh;
-  overflow-x: hidden;
+  /* height is controlled by Tailwind h-[100dvh] on the body element in layout.tsx */
+  /* overflow is controlled by Tailwind overflow-hidden to prevent body scroll */
 }
 
 /* ─── Custom scrollbar ─────────────────────────────────── */

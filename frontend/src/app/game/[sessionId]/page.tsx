@@ -299,38 +299,56 @@ export default function GamePage() {
 
       {/* Top bar */}
       <div
-        className="shrink-0 px-4 py-2 flex items-center justify-between gap-4"
+        className="shrink-0 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-4"
         style={{
           background: 'linear-gradient(to bottom, rgba(8,8,14,0.98), rgba(6,6,10,0.96))',
           borderBottom: '1px solid rgba(30,30,42,0.9)',
           boxShadow: '0 2px 20px rgba(0,0,0,0.5)',
         }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={() => router.push('/dashboard')}
-            className="text-muted/60 hover:text-foreground transition-colors"
+            className="shrink-0 transition-colors"
+            style={{ color: 'rgba(237,230,214,0.55)' }}
             title="Return to Headquarters"
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#f5e6c8'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(237,230,214,0.55)'; }}
           >
             <ChevronLeft size={18} />
           </button>
           {/* Case ID + victim name */}
-          <div className="border-l border-border/60 pl-3">
-            <p className="font-mono text-[9px] text-danger/60 uppercase tracking-[0.35em] leading-none mb-0.5">
-              ◆ Case #{sessionId.slice(0, 8).toUpperCase()} &bull; {session.difficulty.toUpperCase()}
+          <div className="border-l border-border/60 pl-2 sm:pl-3 min-w-0">
+            <p className="font-mono text-[9px] uppercase tracking-[0.3em] leading-none mb-0.5 truncate" style={{ color: 'rgba(155,34,38,0.75)' }}>
+              ◆ Case #{sessionId.slice(0, 6).toUpperCase()} &bull; {session.difficulty.toUpperCase()}
             </p>
-            <p className="font-serif text-foreground text-sm font-bold">
+            <p className="font-serif text-foreground text-sm font-bold truncate">
               {session.case.victim.name}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Re-open case file button */}
           <button
             onClick={() => { setShowCaseBook(true); playClick(); }}
             title="Open Case File"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border border-border/70 text-muted/70 hover:border-accent/60 hover:text-accent hover:bg-accent/5 transition-all duration-200 font-mono text-[11px] tracking-widest uppercase"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all duration-200 font-mono text-[11px] tracking-widest uppercase"
+            style={{
+              border: '1px solid rgba(237,230,214,0.22)',
+              color: 'rgba(237,230,214,0.70)',
+              background: 'rgba(0,0,0,0.3)',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(201,162,39,0.55)';
+              (e.currentTarget as HTMLButtonElement).style.color = '#e8c84a';
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(201,162,39,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(237,230,214,0.22)';
+              (e.currentTarget as HTMLButtonElement).style.color = 'rgba(237,230,214,0.70)';
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,0,0,0.3)';
+            }}
           >
             <FileText size={11} />
             <span className="hidden sm:inline">Case File</span>
@@ -340,9 +358,15 @@ export default function GamePage() {
           {timerStarted && timerExpiresAt ? (
             <CountdownTimer expiresAt={timerExpiresAt} onExpire={handleTimerExpire} />
           ) : (
-            <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted/40 border border-dashed border-muted/20 rounded-sm px-2.5 py-1.5 tracking-widest uppercase">
-              <FileText size={10} className="text-muted/30" />
-              <span className="hidden sm:inline">Read file to start timer</span>
+            <div
+              className="flex items-center gap-1.5 font-mono text-[10px] border border-dashed rounded-md px-2.5 py-1.5 tracking-widest uppercase"
+              style={{
+                borderColor: 'rgba(237,230,214,0.18)',
+                color: 'rgba(237,230,214,0.45)',
+              }}
+            >
+              <FileText size={10} style={{ opacity: 0.5 }} />
+              <span className="hidden sm:inline">Read file first</span>
             </div>
           )}
         </div>
@@ -352,20 +376,22 @@ export default function GamePage() {
       <div className="lg:hidden flex border-b border-border bg-surface shrink-0">
         <button
           onClick={() => setMobileView('case')}
-          className={[
-            'flex-1 py-2.5 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors',
-            mobileView === 'case' ? 'text-accent border-b-2 border-accent' : 'text-muted',
-          ].join(' ')}
+          className="flex-1 py-2.5 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors"
+          style={{
+            color: mobileView === 'case' ? '#c9a227' : 'rgba(237,230,214,0.60)',
+            borderBottom: mobileView === 'case' ? '2px solid #c9a227' : '2px solid transparent',
+          }}
         >
           <FileText size={13} />
           Suspects
         </button>
         <button
           onClick={() => setMobileView('interrogation')}
-          className={[
-            'flex-1 py-2.5 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors',
-            mobileView === 'interrogation' ? 'text-accent border-b-2 border-accent' : 'text-muted',
-          ].join(' ')}
+          className="flex-1 py-2.5 font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors"
+          style={{
+            color: mobileView === 'interrogation' ? '#c9a227' : 'rgba(237,230,214,0.60)',
+            borderBottom: mobileView === 'interrogation' ? '2px solid #c9a227' : '2px solid transparent',
+          }}
         >
           Interrogation
           {selectedCharacter && <span className="w-1.5 h-1.5 rounded-full bg-accent" />}

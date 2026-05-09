@@ -169,7 +169,7 @@ export default function ResultPage() {
         aria-hidden="true"
       />
 
-      <div className="relative z-10 max-w-2xl w-full mx-auto px-5 py-14 flex flex-col gap-8">
+      <div className="relative z-10 max-w-2xl w-full mx-auto px-4 sm:px-5 py-8 sm:py-14 flex flex-col gap-6 sm:gap-8">
 
         {/* Status banner */}
         <motion.div
@@ -206,7 +206,7 @@ export default function ResultPage() {
             </p>
             <h1
               className={[
-                'font-display text-4xl sm:text-5xl font-black tracking-widest uppercase',
+                'font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-widest uppercase',
                 correct ? 'text-success-bright' : 'text-danger-bright',
               ].join(' ')}
             >
@@ -290,7 +290,7 @@ export default function ResultPage() {
           <Button
             size="lg"
             onClick={() => router.push('/dashboard')}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto min-w-[200px]"
           >
             Return to Headquarters
           </Button>

@@ -409,7 +409,7 @@ export default function DashboardPage() {
                 </span>
               </div>
 
-              <h1 className="font-display font-black text-[26px] leading-[1.05] tracking-tight">
+              <h1 className="font-display font-black text-[22px] sm:text-[26px] leading-[1.05] tracking-tight">
                 <span className="text-[#f5e6c8]">Good evening,</span><br />
                 <motion.span
                   className="inline-block"

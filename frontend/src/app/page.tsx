@@ -228,7 +228,7 @@ export default function LandingPage() {
       >
         {/* Top gold accent line */}
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-px pointer-events-none"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-px pointer-events-none"
           style={{
             background: 'linear-gradient(to right, transparent, rgba(201,162,39,0.4), transparent)',
             zIndex: 2,
@@ -280,11 +280,13 @@ export default function LandingPage() {
           </p>
         </motion.div>
 
-        {/* Floating evidence markers */}
-        <EvidenceMarker number={1} x="7%" y="22%" delay={2.0} label="Point of entry" />
-        <EvidenceMarker number={2} x="82%" y="15%" delay={2.3} label="Last known" />
-        <EvidenceMarker number={3} x="88%" y="72%" delay={2.6} />
-        <EvidenceMarker number={4} x="5%" y="68%" delay={2.9} />
+        {/* Floating evidence markers — hidden on very small screens to avoid clutter */}
+        <div className="hidden sm:contents">
+          <EvidenceMarker number={1} x="8%" y="22%" delay={2.0} label="Point of entry" />
+          <EvidenceMarker number={2} x="80%" y="15%" delay={2.3} label="Last known" />
+          <EvidenceMarker number={3} x="85%" y="72%" delay={2.6} />
+          <EvidenceMarker number={4} x="6%" y="68%" delay={2.9} />
+        </div>
 
         {/* "CASE UNSOLVED" stamp */}
         <motion.div
@@ -319,7 +321,7 @@ export default function LandingPage() {
 
         {/* Main content */}
         <motion.div
-          className="relative flex flex-col items-center text-center px-6 max-w-2xl mx-auto"
+          className="relative flex flex-col items-center text-center px-4 sm:px-6 max-w-2xl w-full mx-auto"
           style={{ x: titleX, y: titleY, zIndex: 10 }}
         >
           {/* Eyebrow */}
@@ -357,12 +359,12 @@ export default function LandingPage() {
                 <h1
                   className={[
                     'font-display font-black leading-none tracking-[0.12em] select-none cursor-default',
-                    i === 0 ? 'text-5xl sm:text-7xl md:text-8xl text-foreground' : '',
+                    i === 0 ? 'text-4xl xs:text-5xl sm:text-7xl md:text-8xl text-foreground' : '',
                     i === 1
-                      ? 'text-5xl sm:text-7xl md:text-8xl text-accent animate-flicker'
+                      ? 'text-4xl xs:text-5xl sm:text-7xl md:text-8xl text-accent animate-flicker'
                       : '',
                     i === 2
-                      ? 'text-3xl sm:text-4xl md:text-5xl text-foreground/55 tracking-[0.35em]'
+                      ? 'text-2xl xs:text-3xl sm:text-4xl md:text-5xl text-foreground/55 tracking-[0.25em] sm:tracking-[0.35em]'
                       : '',
                   ].join(' ')}
                   style={i === 1 ? { textShadow: '0 0 40px rgba(201,162,39,0.45)' } : undefined}
@@ -445,15 +447,11 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.9, ease: EASE }}
-            className="mt-10 flex items-center gap-6 sm:gap-10"
+            className="mt-8 sm:mt-10 grid grid-cols-3 gap-4 sm:flex sm:items-center sm:gap-10 w-full sm:w-auto"
           >
-            <div className="h-8 w-px bg-border/50" />
             <StatItem value="∞" label="Unique Cases" />
-            <div className="h-8 w-px bg-border/50" />
             <StatItem value="AI" label="Powered" />
-            <div className="h-8 w-px bg-border/50" />
             <StatItem value="3" label="Difficulties" />
-            <div className="h-8 w-px bg-border/50" />
           </motion.div>
 
           {/* Footer tag */}

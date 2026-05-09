@@ -49,8 +49,14 @@ export function HintButton({ hintUsed, hint, loading, onRequestHint }: HintButto
   // Confirm prompt
   if (showConfirm) {
     return (
-      <div className="border border-amber-800/50 bg-amber-950/20 rounded p-3 space-y-2">
-        <p className="text-amber-400 text-xs font-mono leading-relaxed">
+      <div
+        className="rounded-lg p-3.5 space-y-3"
+        style={{
+          background: 'rgba(201,162,39,0.07)',
+          border: '1px solid rgba(201,162,39,0.30)',
+        }}
+      >
+        <p className="text-[#e8c84a] text-xs font-mono leading-relaxed">
           You only get one hint. Use it wisely. Are you sure?
         </p>
         <div className="flex gap-2">
@@ -59,13 +65,26 @@ export function HintButton({ hintUsed, hint, loading, onRequestHint }: HintButto
               setShowConfirm(false);
               onRequestHint();
             }}
-            className="text-xs font-mono bg-accent text-background px-3 py-1.5 rounded uppercase tracking-widest hover:bg-accent-hover transition-colors"
+            className="text-xs font-mono bg-accent text-background font-bold px-3 py-1.5 rounded uppercase tracking-widest hover:bg-accent-hover active:scale-[0.97] transition-all"
           >
             Yes, reveal
           </button>
           <button
             onClick={() => setShowConfirm(false)}
-            className="text-xs font-mono border border-border text-muted px-3 py-1.5 rounded uppercase tracking-widest hover:text-foreground hover:border-accent/50 transition-colors"
+            className="text-xs font-mono px-3 py-1.5 rounded uppercase tracking-widest transition-all"
+            style={{
+              border: '1px solid rgba(237,230,214,0.30)',
+              color: 'rgba(237,230,214,0.75)',
+              background: 'rgba(0,0,0,0.3)',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(201,162,39,0.50)';
+              (e.currentTarget as HTMLButtonElement).style.color = '#e8c84a';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(237,230,214,0.30)';
+              (e.currentTarget as HTMLButtonElement).style.color = 'rgba(237,230,214,0.75)';
+            }}
           >
             Cancel
           </button>
@@ -78,9 +97,24 @@ export function HintButton({ hintUsed, hint, loading, onRequestHint }: HintButto
   return (
     <button
       onClick={() => setShowConfirm(true)}
-      className="w-full flex items-center gap-2 text-muted hover:text-amber-400 border border-border hover:border-amber-800/60 rounded p-2.5 transition-all text-xs font-mono uppercase tracking-widest"
+      className="w-full flex items-center gap-2 rounded-lg p-2.5 transition-all text-xs font-mono uppercase tracking-widest group"
+      style={{
+        border: '1px solid rgba(201,162,39,0.25)',
+        color: 'rgba(237,230,214,0.65)',
+        background: 'rgba(0,0,0,0.25)',
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(201,162,39,0.55)';
+        (e.currentTarget as HTMLButtonElement).style.color = '#e8c84a';
+        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(201,162,39,0.06)';
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(201,162,39,0.25)';
+        (e.currentTarget as HTMLButtonElement).style.color = 'rgba(237,230,214,0.65)';
+        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,0,0,0.25)';
+      }}
     >
-      <Lightbulb size={13} />
+      <Lightbulb size={13} style={{ color: '#c9a227' }} />
       Request Hint (one-time only)
     </button>
   );
