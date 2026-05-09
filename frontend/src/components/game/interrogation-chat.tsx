@@ -39,9 +39,11 @@ type RecognitionLike = {
 
 function getRecognitionCtor(): (new () => RecognitionLike) | null {
   if (typeof window === 'undefined') return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const w = window as any;
-  return (w.SpeechRecognition || w.webkitSpeechRecognition) ?? null;
+  const w = window as unknown as {
+    SpeechRecognition?: new () => RecognitionLike;
+    webkitSpeechRecognition?: new () => RecognitionLike;
+  };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
 export function InterrogationChat({

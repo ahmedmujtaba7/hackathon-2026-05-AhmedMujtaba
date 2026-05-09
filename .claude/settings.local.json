@@ -15,7 +15,8 @@
       "Bash(npx tsc *)",
       "Bash(dir /s /b \"C:\\\\Users\\\\Funavry\\\\Desktop\\\\hackathon-2026-05-AhmedMujtaba\\\\frontend\\\\src\\\\app\\\\*page.tsx\")",
       "Bash(echo \"EXIT:$?\")",
-      "Bash(mkdir -p \"C:/Users/Funavry/Desktop/hackathon-2026-05-AhmedMujtaba/frontend/public/music\" && cp \"C:/Users/Funavry/Downloads/freesound_community-mystery-and-thriller-music-7070.mp3\" \"C:/Users/Funavry/Desktop/hackathon-2026-05-AhmedMujtaba/frontend/public/music/mystery-thriller.mp3\" && ls -la \"C:/Users/Funavry/Desktop/hackathon-2026-05-AhmedMujtaba/frontend/public/music/\")"
+      "Bash(mkdir -p \"C:/Users/Funavry/Desktop/hackathon-2026-05-AhmedMujtaba/frontend/public/music\" && cp \"C:/Users/Funavry/Downloads/freesound_community-mystery-and-thriller-music-7070.mp3\" \"C:/Users/Funavry/Desktop/hackathon-2026-05-AhmedMujtaba/frontend/public/music/mystery-thriller.mp3\" && ls -la \"C:/Users/Funavry/Desktop/hackathon-2026-05-AhmedMujtaba/frontend/public/music/\")",
+      "Bash(npm run *)"
     ]
   }
 }
