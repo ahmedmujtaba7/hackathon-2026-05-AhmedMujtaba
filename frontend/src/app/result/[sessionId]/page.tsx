@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
 import { useAudio } from '@/lib/audio-context';
+import { phCapture } from '@/lib/posthog';
 import type { VerdictResult } from '@/lib/types';
 import { FullPageSpinner } from '@/components/ui/spinner';
 import { CoinDisplay } from '@/components/layout/coin-display';
@@ -111,6 +112,16 @@ export default function ResultPage() {
       if (!localStorage.getItem(statsKey)) {
         try {
           const difficulty = (localStorage.getItem(`mm_session_${sessionId}`) ?? 'medium') as string;
+
+          // PostHog verdict result event — fires once per session
+          phCapture('verdict_result', {
+            session_id: sessionId,
+            difficulty,
+            outcome: parsed.correct ? 'win' : 'loss',
+            coins_earned: parsed.coinsEarned,
+            new_coin_balance: parsed.coinBalance,
+          });
+
           const stored = localStorage.getItem('detective_stats');
           const stats = stored ? JSON.parse(stored) : {
             total: 0, wins: 0,
@@ -289,7 +300,10 @@ export default function ResultPage() {
         >
           <Button
             size="lg"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => {
+              phCapture('return_to_dashboard_clicked', { from: 'result_page', outcome: correct ? 'win' : 'loss' });
+              router.push('/dashboard');
+            }}
             className="w-full sm:w-auto min-w-[200px]"
           >
             Return to Headquarters
@@ -297,7 +311,10 @@ export default function ResultPage() {
           <motion.button
             whileHover={{ x: 3 }}
             transition={{ type: 'spring', stiffness: 400 }}
-            onClick={() => router.push('/game/new')}
+            onClick={() => {
+              phCapture('play_again_clicked', { outcome: correct ? 'win' : 'loss', session_id: sessionId });
+              router.push('/game/new');
+            }}
             className="font-mono text-xs text-muted/50 hover:text-accent transition-colors tracking-widest uppercase"
           >
             Start Another Investigation &#8594;

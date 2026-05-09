@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, getToken, clearToken } from './api';
+import { phIdentify, phReset, phCapture } from './posthog';
 import type { User } from './types';
 
 interface AuthContextValue {
@@ -34,6 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const me = await api.getMe();
       setUser(me);
+      // Identify user in PostHog so all subsequent events are tied to them
+      phIdentify(me.id, { email: me.email, coin_balance: me.coinBalance });
     } catch {
       clearToken();
       setUser(null);
@@ -47,6 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser]);
 
   const logout = useCallback((): void => {
+    phCapture('user_logout');
+    phReset();
     clearToken();
     setUser(null);
     router.push('/');

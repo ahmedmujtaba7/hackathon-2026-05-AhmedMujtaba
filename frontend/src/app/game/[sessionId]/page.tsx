@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
 import { useAudio } from '@/lib/audio-context';
 import { api } from '@/lib/api';
+import { phCapture } from '@/lib/posthog';
 import type { GameSession, Suspect, Witness, Character, InterrogationMessage } from '@/lib/types';
 import { FullPageSpinner } from '@/components/ui/spinner';
 import { CountdownTimer } from '@/components/game/countdown-timer';
@@ -66,6 +67,9 @@ export default function GamePage() {
   const [timeExpired, setTimeExpired] = useState(false);
   const expireHandledRef = useRef(false);
 
+  // Analytics counters
+  const questionsAskedRef = useRef(0);
+
   // Mobile panel toggle
   const [mobileView, setMobileView] = useState<'case' | 'interrogation'>('case');
 
@@ -105,27 +109,41 @@ export default function GamePage() {
     if (!timerStarted) {
       setTimerStarted(true);
       setTimerExpiresAt(session.expiresAt);
+      phCapture('investigation_begun', {
+        session_id: sessionId,
+        difficulty: session.difficulty,
+        suspect_count: session.case.suspects?.length ?? 0,
+        witness_count: session.case.witnesses?.length ?? 0,
+      });
+    } else {
+      phCapture('case_file_closed', { session_id: sessionId });
     }
     playClick();
-  }, [session, timerStarted, playClick]);
+  }, [session, sessionId, timerStarted, playClick]);
 
   // Handle closing the book mid-game (doesn't restart timer)
   const handleCloseCaseBook = useCallback(() => {
     setShowCaseBook(false);
+    phCapture('case_file_closed', { session_id: sessionId });
     playClick();
-  }, [playClick]);
+  }, [sessionId, playClick]);
 
   // Handle timer expiry
   const handleTimerExpire = useCallback(async () => {
     if (expireHandledRef.current) return;
     expireHandledRef.current = true;
     setTimeExpired(true);
+    phCapture('timer_expired', {
+      session_id: sessionId,
+      difficulty: session?.difficulty,
+      questions_asked: questionsAskedRef.current,
+    });
     try {
       const result = await api.submitVerdict(sessionId, '');
       sessionStorage.setItem(`result_${sessionId}`, JSON.stringify(result));
     } catch {}
     setTimeout(() => router.push(`/result/${sessionId}`), 2500);
-  }, [sessionId, router]);
+  }, [sessionId, session, router]);
 
   // Get messages for selected character
   const currentMessages: InterrogationMessage[] = selectedCharacter
@@ -136,6 +154,16 @@ export default function GamePage() {
   const handleSendQuestion = useCallback(
     async (question: string) => {
       if (!selectedCharacter || !session) return;
+
+      questionsAskedRef.current += 1;
+      phCapture('question_sent', {
+        session_id: sessionId,
+        difficulty: session.difficulty,
+        character_name: selectedCharacter.name,
+        character_role: selectedCharacter.role,
+        question_number: questionsAskedRef.current,
+        question_length: question.length,
+      });
 
       const detectiveMsg: InterrogationMessage = {
         role: 'detective',
@@ -160,6 +188,12 @@ export default function GamePage() {
           timestamp: Date.now(),
         };
         playReceive();
+        phCapture('answer_received', {
+          session_id: sessionId,
+          character_name: selectedCharacter.name,
+          character_role: selectedCharacter.role,
+          answer_length: res.answer.length,
+        });
         setConversations((prev) => {
           const next = new Map(prev);
           const existing = next.get(selectedCharacter.id) ?? [];
@@ -187,22 +221,40 @@ export default function GamePage() {
   const handleRequestHint = useCallback(async () => {
     setHintLoading(true);
     setHintError(null);
+    phCapture('hint_requested', {
+      session_id: sessionId,
+      difficulty: session?.difficulty,
+      questions_asked_so_far: questionsAskedRef.current,
+    });
     try {
       const res = await api.requestHint(sessionId);
       setHintText(res.hint);
       setSession((prev) => prev ? { ...prev, hintUsed: true } : prev);
+      phCapture('hint_received', {
+        session_id: sessionId,
+        hint_length: res.hint.length,
+      });
     } catch (err: unknown) {
       setHintError(err instanceof Error ? err.message : 'Failed to get hint.');
     } finally {
       setHintLoading(false);
     }
-  }, [sessionId]);
+  }, [sessionId, session]);
 
   // Submit accusation
   const handleAccuse = useCallback(
     async (suspectId: string) => {
       setAccusationLoading(true);
       setAccusationError(null);
+      const accusedName = session?.case.suspects?.find((s) => s.id === suspectId)?.name ?? suspectId;
+      phCapture('verdict_submitted', {
+        session_id: sessionId,
+        difficulty: session?.difficulty,
+        accused_id: suspectId,
+        accused_name: accusedName,
+        questions_asked: questionsAskedRef.current,
+        hint_used: session?.hintUsed ?? false,
+      });
       try {
         const result = await api.submitVerdict(sessionId, suspectId);
         sessionStorage.setItem(`result_${sessionId}`, JSON.stringify(result));
@@ -212,7 +264,7 @@ export default function GamePage() {
         setAccusationLoading(false);
       }
     },
-    [sessionId, router],
+    [sessionId, session, router],
   );
 
   if (authLoading || sessionLoading) return <FullPageSpinner />;
@@ -331,7 +383,11 @@ export default function GamePage() {
         <div className="flex items-center gap-2 shrink-0">
           {/* Re-open case file button */}
           <button
-            onClick={() => { setShowCaseBook(true); playClick(); }}
+            onClick={() => {
+              setShowCaseBook(true);
+              playClick();
+              phCapture('case_file_opened', { session_id: sessionId, re_open: timerStarted });
+            }}
             title="Open Case File"
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all duration-200 font-mono text-[11px] tracking-widest uppercase"
             style={{
@@ -415,6 +471,12 @@ export default function GamePage() {
               onSelect={(char) => {
                 setSelectedCharacter(char);
                 setMobileView('interrogation');
+                phCapture('suspect_selected', {
+                  session_id: sessionId,
+                  character_name: char.name,
+                  character_role: char.role,
+                  difficulty: session?.difficulty,
+                });
               }}
             />
 
@@ -435,7 +497,16 @@ export default function GamePage() {
             <Button
               variant="destructive"
               size="md"
-              onClick={() => { setShowAccusation(true); playClick(); }}
+              onClick={() => {
+                setShowAccusation(true);
+                playClick();
+                phCapture('accusation_panel_opened', {
+                  session_id: sessionId,
+                  difficulty: session?.difficulty,
+                  questions_asked: questionsAskedRef.current,
+                  hint_used: session?.hintUsed ?? false,
+                });
+              }}
               className="w-full"
               disabled={!timerStarted}
             >

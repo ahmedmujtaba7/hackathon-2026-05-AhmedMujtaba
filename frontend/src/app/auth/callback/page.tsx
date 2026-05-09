@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, setToken } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { phCapture } from '@/lib/posthog';
 import { FullPageSpinner } from '@/components/ui/spinner';
 
 function AuthCallbackInner() {
@@ -16,6 +17,7 @@ function AuthCallbackInner() {
     const token = searchParams.get('token');
 
     if (!token) {
+      phCapture('auth_failure', { reason: 'no_token' });
       setError('No authentication token received. Please try again.');
       setTimeout(() => router.replace('/'), 3000);
       return;
@@ -25,11 +27,13 @@ function AuthCallbackInner() {
     setToken(token);
     api
       .getMe()
-      .then(async () => {
+      .then(async (me) => {
+        phCapture('auth_success', { user_id: me.id, email: me.email });
         await refreshUser();
         router.replace('/dashboard');
       })
       .catch((err: Error) => {
+        phCapture('auth_failure', { reason: 'token_rejected', error: err.message });
         setError(err.message || 'Authentication failed. Please try again.');
         setTimeout(() => router.replace('/'), 3000);
       });

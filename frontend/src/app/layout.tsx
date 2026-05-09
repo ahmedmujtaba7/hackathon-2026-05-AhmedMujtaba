@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Playfair_Display, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 import { AudioProvider } from '@/lib/audio-context';
+import { PostHogProvider } from '@/components/providers/posthog-provider';
 import { Header } from '@/components/layout/header';
 import NoirBackground from '@/components/ui/noir-background';
 
@@ -41,15 +42,20 @@ export default function RootLayout({
 
         {/* ── Content sits above canvas (z-index via relative/z-10) ── */}
         <div className="relative z-10 flex flex-col flex-1 min-h-0">
-          <AuthProvider>
-            <AudioProvider>
-              <Header />
-              {/* Each page decides its own scroll behavior:
-                  - Game session uses overflow-hidden internally (chat scrolls only)
-                  - Dashboard/landing/result use overflow-y-auto on their root */}
-              <main className="flex-1 flex flex-col min-h-0">{children}</main>
-            </AudioProvider>
-          </AuthProvider>
+          {/* PostHogProvider uses useSearchParams → must be inside Suspense */}
+          <Suspense fallback={null}>
+            <PostHogProvider>
+              <AuthProvider>
+                <AudioProvider>
+                  <Header />
+                  {/* Each page decides its own scroll behavior:
+                      - Game session uses overflow-hidden internally (chat scrolls only)
+                      - Dashboard/landing/result use overflow-y-auto on their root */}
+                  <main className="flex-1 flex flex-col min-h-0">{children}</main>
+                </AudioProvider>
+              </AuthProvider>
+            </PostHogProvider>
+          </Suspense>
         </div>
       </body>
     </html>

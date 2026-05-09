@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 import { playClick } from '@/lib/audio';
+import { phCapture } from '@/lib/posthog';
 
 interface LoginButtonProps {
   className?: string;
@@ -12,7 +13,7 @@ interface LoginButtonProps {
 export function LoginButton({ className }: LoginButtonProps) {
   return (
     <motion.button
-      onClick={() => { playClick(); api.loginWithGoogle(); }}
+      onClick={() => { playClick(); phCapture('sign_in_clicked'); api.loginWithGoogle(); }}
       whileHover={{ scale: 1.04, y: -1 }}
       whileTap={{ scale: 0.97, y: 1 }}
       transition={{ type: 'spring', stiffness: 380, damping: 22 }}

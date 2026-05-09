@@ -6,6 +6,7 @@ import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-mo
 import { useAuth } from '@/lib/auth-context';
 import { useAudio } from '@/lib/audio-context';
 import { api } from '@/lib/api';
+import { phCapture } from '@/lib/posthog';
 import { FullPageSpinner } from '@/components/ui/spinner';
 import { CoinDisplay } from '@/components/layout/coin-display';
 import { Button } from '@/components/ui/button';
@@ -259,6 +260,11 @@ export default function NewGamePage() {
     setError(null);
     setStarting(difficulty);
     playClick();
+    phCapture('case_started', {
+      difficulty,
+      cost: DIFFICULTY_INFO[difficulty].coins,
+      coin_balance_before: user.coinBalance,
+    });
     try {
       const result = await api.startCase(difficulty);
       playCoin();
@@ -266,6 +272,7 @@ export default function NewGamePage() {
       router.push(`/game/${result.sessionId}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to start case.';
+      phCapture('case_start_failed', { difficulty, reason: message });
       setError(message);
       setStarting(null);
     }
