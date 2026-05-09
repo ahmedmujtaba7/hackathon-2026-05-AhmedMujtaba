@@ -1,6 +1,6 @@
 # Phase 8 — Deployment
 
-**Status:** PENDING
+**Status:** IN PROGRESS
 **Goal:** Get the app on a public URL so judges can play it from their own machines. Frontend on Vercel, backend + Postgres on Railway.
 
 ---
@@ -107,11 +107,31 @@ Same as Phase 6 Step 2 (golden path), but on the live URLs:
 
 ## Done
 
-_(Add live URLs here once deployed.)_
+### Frontend (Vercel) — May 9
 
-- Backend URL: _(pending)_
-- Frontend URL: _(pending)_
-- First deploy: _(date)_
+- **Frontend URL:** `https://mm-deploy-1778312687-d9336mvqa-ahmed-mujtaba-1361.vercel.app`
+- **First deploy:** May 9, 2026
+
+#### What was fixed to make deployment work
+
+| Problem | Root cause | Fix |
+|---------|-----------|-----|
+| "No Next.js version detected" (3× attempts) | `frontend/package-lock.json` was an 813-line stub — `npm ci` installed nothing, `next/` never appeared in `node_modules` | Deleted stub; ran `npm install --legacy-peer-deps` to generate a real 6,759-line lockfile |
+| React 19 peer-dep conflict | `framer-motion` + other packages have not yet declared React 19 in their `peerDependencies` | Added `frontend/.npmrc` with `legacy-peer-deps=true` |
+| CVE-2025-66478 blocking deploy | Vercel blocks deploys with Next.js 15.0.3 (known vulnerability) | Upgraded to `next@^16.2.6` |
+| Monorepo: Vercel couldn't find build output | Root `vercel.json` wasn't pointing at `frontend/` | Added root `vercel.json` with `buildCommand: "pnpm --filter frontend build"` and `outputDirectory: "frontend/.next"` |
+| CLI git-relative paths (43 files only) | Deploying from inside git repo preserved `frontend/` prefix; Vercel saw a subdirectory not a root app | Deployed via `vercel --prod --yes --archive=tgz` from a temp directory outside git |
+
+#### Deployment protection note
+Vercel Deployment Protection is **on by default** for team projects. After deploy, if you see HTTP 401, go to **Vercel → Project Settings → Deployment Protection** and toggle it off (or add the reviewer's email to the allowed list).
+
+#### Environment variables still needed on Vercel
+```
+NEXT_PUBLIC_API_URL=https://<railway-backend-domain>
+```
+Add under Project → Settings → Environment Variables before the backend goes live.
+
+- Backend URL: _(pending — Railway deploy)_
 
 ---
 

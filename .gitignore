@@ -35,7 +35,17 @@ coverage/
 *.tsbuildinfo
 
 # Editor
-.vscode/
+.vscode/settings.json
 .idea/
 *.swp
 *.swo
+
+# Claude Code internal state (local only — not useful to collaborators)
+.claude/settings.local.json
+.claude/worktrees/
+
+# Vercel
+.vercel/
+
+# pnpm store cache
+.pnpm-store/

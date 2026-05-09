@@ -178,6 +178,8 @@ Constraints: coins never go below 0. Private suspect truths never reach the clie
 - Using Opus for UI components — Sonnet is faster and cheaper for that
 - Prompting without referencing CLAUDE.md conventions (caused the raw-SQL bug)
 - Forgetting to specify data-format contracts before spawning background agents (caused a `{t,w}` vs `{total,wins}` mismatch between the agent's dashboard and my result-page stats writer)
+- Letting a stub `package-lock.json` sit in the repo — always verify lockfile line count before CI deploys (`wc -l package-lock.json`; a real Next.js project is 3,000+ lines)
+- Deploying via Vercel CLI from inside a git monorepo without `--archive=tgz` — git-relative path preservation sends `frontend/` as a subdirectory, not the root
 
 ---
 
@@ -340,6 +342,37 @@ Add background music using public/music/mystery-thriller.mp3.
 **Output quality:** 5
 **Model used:** Sonnet 4.6
 **Approx cost:** ~$0.004
+
+## Deployment pass (May 9) — Vercel + gitignore
+
+### 15. Vercel deployment — monorepo config + lockfile repair
+**Context:** Frontend was failing on Vercel with "No Next.js version detected" despite the project being a proper Next.js app. Happened on 3 consecutive deploy attempts even after adding `vercel.json` and setting Root Directory.
+**Root cause discovered:** `frontend/package-lock.json` was an 813-line stub (created during an earlier `npm init` run) with no transitive dependencies. Vercel ran `npm ci`, nothing installed, `next/` never appeared in `node_modules`.
+**Fix applied:**
+```bash
+# Delete stub lockfile
+rm frontend/package-lock.json
+
+# Regenerate with legacy-peer-deps (React 19 peer-dep conflict)
+cd frontend && npm install --legacy-peer-deps
+
+# Add .npmrc so future CI runs don't need the flag
+echo "legacy-peer-deps=true" > .npmrc
+
+# Upgrade Next.js past CVE-2025-66478 (Vercel blocks 15.0.3)
+npm install next@latest --legacy-peer-deps
+# Resolved to ^16.2.6
+
+# Deploy from temp dir outside git to avoid git-relative path issues
+cp -r frontend /tmp/mm-deploy-$(date +%s)
+cd /tmp/mm-deploy-... && vercel --prod --yes --archive=tgz
+```
+**Why it worked:** The real lockfile has 6,759 lines vs the stub's 813 — all transitive deps properly resolved. The `--archive=tgz` flag uploads a flat tarball rather than using git-relative paths, so Vercel sees the Next.js root correctly.
+**Output quality:** 5
+**Model used:** Sonnet 4.6
+**Approx cost:** ~$0.012 (multiple debug passes)
+
+---
 
 ### 14. Dashboard pixel-perfect viewport fit
 **Context:** Detective Profile card was being clipped at the bottom of the viewport at 1080p. User wanted "pixel-perfect" — fits without scroll.

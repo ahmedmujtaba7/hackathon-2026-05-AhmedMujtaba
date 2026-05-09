@@ -1,0 +1,31 @@
+# ── Dependencies ─────────────────────────────────────────────────────────────
+node_modules/
+
+# ── NestJS build output ──────────────────────────────────────────────────────
+dist/
+build/
+
+# ── TypeScript cache ─────────────────────────────────────────────────────────
+*.tsbuildinfo
+tsconfig.build.tsbuildinfo
+
+# ── Environment secrets ──────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Test & coverage ──────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── Editor & OS ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.sw?
+
+# ── Source maps (generated, not needed in VCS) ───────────────────────────────
+*.js.map

@@ -12,8 +12,8 @@ Each phase has its own document under `phases/` with: **goal → plan → done �
 | 4 | Core game loop — case, interrogate, hint, verdict services | DONE | [phases/PHASE_4_game_loop.md](phases/PHASE_4_game_loop.md) |
 | 5 | Frontend UI — pages, components, noir theme | DONE | [phases/PHASE_5_frontend_ui.md](phases/PHASE_5_frontend_ui.md) |
 | 6 | Integration testing & QA | IN PROGRESS | [phases/PHASE_6_qa.md](phases/PHASE_6_qa.md) |
-| 7 | Polish, animations, demo prep | IN PROGRESS | [phases/PHASE_7_polish.md](phases/PHASE_7_polish.md) |
-| 8 | Deployment — Vercel + Railway + Postgres | PENDING | [phases/PHASE_8_deployment.md](phases/PHASE_8_deployment.md) |
+| 7 | Polish, animations, demo prep | DONE | [phases/PHASE_7_polish.md](phases/PHASE_7_polish.md) |
+| 8 | Deployment — Vercel + Railway + Postgres | IN PROGRESS | [phases/PHASE_8_deployment.md](phases/PHASE_8_deployment.md) |
 
 ## Polish work completed (Phase 7 highlights — May 8)
 
@@ -46,12 +46,29 @@ Each phase has its own document under `phases/` with: **goal → plan → done �
 - Update each doc's **Done** section as you complete tasks. Keep **Pending** tight.
 - One phase in flight at a time.
 
+## Deployment work completed (Phase 8 partial — May 9)
+
+| Task | Status |
+|------|--------|
+| Frontend deployed to Vercel via CLI (`--archive=tgz`, temp dir outside git) | DONE |
+| `package-lock.json` stub bug identified and fixed (813-line stub → 6,759-line real lockfile) | DONE |
+| Next.js CVE-2025-66478 resolved: upgraded `15.0.3` → `^16.2.6` | DONE |
+| React 19 peer-dep conflict: added `frontend/.npmrc` with `legacy-peer-deps=true` | DONE |
+| Root `vercel.json` with monorepo-aware `buildCommand` + `outputDirectory` | DONE |
+| `frontend/vercel.json` with `{"framework":"nextjs"}` | DONE |
+| Frontend live URL: `https://mm-deploy-1778312687-d9336mvqa-ahmed-mujtaba-1361.vercel.app` | DONE |
+| `.gitignore` files created for root, `frontend/`, and `backend/` | DONE |
+| `.claude/settings.local.json` untracked from git index | DONE |
+| Backend deployment (Railway) | PENDING |
+| Production smoke test | PENDING |
+| Google OAuth redirect URI update for prod | PENDING |
+
 ## Timeline mapping
 
 | Date | Phases active |
 |------|---------------|
 | May 7 (Day 1) | 1, 2, 3, 4 (backend foundation done in one push) |
-| May 8 (Day 2) | 5, 6 (frontend wired + first end-to-end pass) |
-| May 9 (Day 3) | 6, 7, 8 (QA + polish + deploy) |
+| May 8 (Day 2) | 5, 6, 7 (frontend wired + audio/voice/polish wave) |
+| May 9 (Day 3) | 7, 8 (polish final + Vercel deployment) |
 | May 10 (rest) | Buffer / break |
 | May 11 (demo) | Live presentation |

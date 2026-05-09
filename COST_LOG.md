@@ -4,8 +4,8 @@
 | --- | ----------- | -------- | ------------ | ------ | ----- |
 | Thu May 7 | ~$8–12 est. | 2–3 | ~10 | ~$1.00 | Backend foundation: NestJS modules, DB schema, auth, 4 AI endpoints, all prompts |
 | Fri May 8 | ~$10–15 est. | 3–4 | ~10 | ~$1.20 | Frontend UI, game loop wiring, TTS all 5 steps, noir theme, voice/audio polish, dashboard, landing |
-| Sat May 9 | ~$4–7 est. | 2 | ~5 | ~$1.00 | Polish wave: voice input (STT), case file auto-narration, navbar fix, dashboard pixel-perfect, layout scroll-architecture fix, background music, MD documentation pass |
-| **Total** | **~$22–34 est.** | 7–9 | **~25** | **~$1.10** | Well under $75/day soft cap; never approached $100/day hard cap |
+| Sat May 9 | ~$7–11 est. | 3–4 | ~8 | ~$1.10 | Vercel deployment debugging (lockfile fix, CVE upgrade, npmrc, monorepo config, CLI temp-dir deploy), gitignore creation + git index clean-up, MD documentation final pass |
+| **Total** | **~$25–40 est.** | 10–13 | **~28** | **~$1.10** | Well under $75/day soft cap; never approached $100/day hard cap |
 
 **Soft cap:** $75/day. **Hard cap:** $100/day.
 
@@ -44,8 +44,10 @@
 | **Layout / UX hardening** | | | | |
 | Layout fix — `<body>` fixed viewport, only inner containers scroll | ~1 | ~700 | ~$0.003 | |
 | **Documentation** | | | | |
-| MD file updates across all sessions | ~10 | ~1 200 | ~$0.018 | CLAUDE.md, PHASES.md, VOICE_FEATURES.md, SPEC.md, PROMPT_LOG.md, SCORECARD.md, COST_LOG.md, DEMO_SCRIPT.md, REFLECTION.md, STANDUP.md |
-| **Total (estimate)** | **~110 calls** | — | **~$0.25** | Direct Claude API spend; Groq runtime separate (free tier) |
+| MD file updates across all sessions | ~12 | ~1 200 | ~$0.022 | CLAUDE.md, PHASES.md, PHASE_8_deployment.md, VOICE_FEATURES.md, SPEC.md, PROMPT_LOG.md, SCORECARD.md, COST_LOG.md, DEMO_SCRIPT.md, REFLECTION.md, STANDUP.md |
+| **Vercel deployment debugging** | ~8 | ~900 | ~$0.012 | 3× "No Next.js version detected" diagnosis; lockfile stub fix; CVE-2025-66478 upgrade; `.npmrc`; monorepo `vercel.json`; CLI temp-dir deploy |
+| **`.gitignore` creation + git index clean-up** | ~2 | ~700 | ~$0.002 | Root, frontend, backend gitignores; `git rm --cached .claude/settings.local.json` |
+| **Total (estimate)** | **~122 calls** | — | **~$0.29** | Direct Claude API spend; Groq runtime separate (free tier) |
 
 **Model default:** claude-sonnet-4-6 (all sessions)
 **Opus used:** Zero times — Sonnet handled all architecture and UI work; Opus was logged as an anti-pattern after one over-engineered card component.
