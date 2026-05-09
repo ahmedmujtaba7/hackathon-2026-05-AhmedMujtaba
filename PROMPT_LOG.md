@@ -1,9 +1,10 @@
 # Prompt Log — Ahmed Mujtaba — AI Murder Mystery Detective
 
-> **22 prompts logged across 3 build days (May 7–9).** Entries 1–5 are the foundational
+> **25 prompts logged across 3 build days (May 7–9).** Entries 1–5 are the foundational
 > backend prompts; 6–10 are the Friday voice/audio/visual polish wave; 11–15 are the
 > Saturday UX hardening + deployment; 16–22 are the post-deployment observability,
-> testing, and polish-wave-2 work. Each entry captures context, the literal prompt
+> testing, and polish-wave-2 work; 23–25 are the polish-wave-3 bug-fix sprint and
+> playtest-driven balance tuning. Each entry captures context, the literal prompt
 > used, why it worked, output quality (1–5), the model, and the approximate cost.
 > Three explicit anti-patterns are recorded under "Bottom 3 prompts that wasted time".
 
@@ -487,6 +488,57 @@ popups where necessary with good UX so the user can skip them.
 **Output quality:** 5
 **Model used:** Sonnet 4.6
 **Approx cost:** ~$0.018 (composite — covers six fixes + deploy)
+
+---
+
+## Polish wave 3 — playtest-driven bug-fix sprint (May 9 evening)
+
+### 23. Five-bug composite fix (timer-start, Hard reward, dashboard fill, narration default, case diversity)
+**Context:** A second composite user message containing five distinct asks: timer was starting at case creation (eating into reading time); Hard difficulty rewards (200 reward on 200 cost = zero net profit) were broken; dashboard bottom-right had visible empty space; auto-narration was firing on every game start (annoying for returning players); same crime scene + same hint phrasing across consecutive plays.
+**Approach (per fix):**
+- **Timer-start:** New `POST /case/:sessionId/begin` endpoint in `case.service.ts → beginTimer()` resets `expiresAt = now + difficulty_ms`. Idempotency via `startedAt` vs `createdAt` comparison (5 s tolerance) so re-clicks don't extend. Frontend `handleBeginInvestigation` becomes async and awaits the call; falls back to `session.expiresAt` on network failure.
+- **Hard reward:** `COIN_REWARDS.hard` 200 → 600 (3× return matching Easy/Medium); `DIFFICULTY_INFO.hard.reward` synced on the frontend.
+- **Dashboard fill:** Investigation Protocol text scaled up (16→22 px step number, 11→13 px body), padding p-3 → px-5 py-4. Added a new `DetectivesNotebook` component with a daily-rotating noir quote (deterministic by date, never empty), gold rule decorations, attribution + entry counter.
+- **Narration default OFF:** Flipped `mm_case_file_autoplay` default from `'1'` (auto on) to `'0'` (opt-in). Auto-narration now requires explicit click of the Auto toggle.
+- **Case diversity:** Settings pool 24 → 48; new 12-entry `DEATH_SEEDS` pool; random entropy token (`Math.random + Date.now`) injected into both prompts; case temp 0.8 → 1.15 + `top_p: 0.95`; hint temp 0.7 → 1.0 + `top_p: 0.95`; new 10-entry `HINT_OPENERS` pool (model picks one); explicit anti-cliché list.
+**Why it worked:** TodoWrite again gave structural backbone. Naming the *symptom* and the *observed root cause* together for each bug collapsed potential debugging paths. The diversity tuning is a clean two-lever solution — prompt rules (qualitative diversity) plus sampler hyperparameters (statistical diversity) target different parts of the generation process and compose cleanly.
+**Output quality:** 5
+**Model used:** Sonnet 4.6
+**Approx cost:** ~$0.022 (composite — five fixes + verify + deploy)
+
+---
+
+### 24. Dashboard vertical-balance fix on big screens
+**Context:** User shared two screenshots — laptop (~720p) and bigger monitor — showing the same dashboard. On the bigger screen, `flex-1` on `DetectiveBadge` (left column) and `DetectivesNotebook` (right column) was stretching them into vast empty rectangles with content huddled at the top. Laptop layout fit perfectly; only the big-screen experience was broken.
+**Approach:** A four-line layout swap, no design changes:
+- Content wrapper: `flex-1 min-h-0` → `my-auto` (sits at natural height; auto vertical margin distributes spare space evenly above and below — vertically centring the dashboard on tall monitors with zero effect on laptops).
+- Columns row: `flex-1 min-h-0` → `lg:items-start` (each column at its own natural content height; shorter column no longer forced to match the taller one).
+- Removed `flex-1` from both `DetectiveBadge` and `DetectivesNotebook`.
+- Outer page wrapper kept `overflow-y-auto` so anything taller than the viewport still scrolls naturally.
+**Why it worked:** Naming the exact CSS class swap and stating the constraint ("must not regress laptop layout") meant the agent didn't try to redesign — it executed the table. Verified mentally before committing: on a viewport just barely taller than content, `my-auto` adds tiny equal margins; on huge viewports it centres; on small viewports it collapses to zero and overflow scrolls.
+**Output quality:** 5
+**Model used:** Sonnet 4.6
+**Approx cost:** ~$0.004
+
+---
+
+### 25. Narration speed reduction + Easy difficulty rewrite (playtest feedback)
+**Context:** User played a few rounds and reported two issues: case-file narration was too fast to follow while reading (`NARRATOR_VOICE.rate = 1.10` was 10% above default), AND Easy cases were impossible to solve in 2 questions — the previous Easy rules were closer to Medium difficulty.
+**Approach:**
+- **TTS rate:** `NARRATOR_VOICE.rate` 1.10 → 0.88; `STORY_VOICE.rate` 1.00 → 0.85. Comment in code explains the trade-off.
+- **Easy rule rewrite:** Discarded the previous rules and authored a strict, explicit Easy spec with seven "MUST" rules:
+  1. Murderer's `why_suspect` field must be glaring on its own (caught on camera, blood on cuff, only key holder).
+  2. Alibi has obvious internal contradiction or is disprovable by ONE simple question.
+  3. `will_crack_if` is short, specific, easy to think of.
+  4. BOTH alibi witnesses must independently contradict the murderer's story without prompting.
+  5. `initial_evidence` must contain ≥3 items, ≥2 pointing clearly at the murderer.
+  6. Motive must be the simplest possible (direct money / immediate jealousy / open revenge).
+  7. NO red herrings. NO partially-true murderer alibi. NO multi-clue motives. NO conflicting witnesses.
+  Heuristic at the bottom: *"If a child detective could solve this with 2 questions, the difficulty is right. If the player has to cross-reference more than two pieces of information, you've made it too hard."*
+**Why it worked:** Two failure modes (pace, design) addressed at the right layer (frontend constants for pace, backend prompt for design). The "child detective with 2 questions" heuristic gives the model an unambiguous self-test that doesn't require token-counting or rule-checking — it just has to imagine running the case once. Medium and Hard rules untouched, so Hard remains genuinely hard.
+**Output quality:** 5
+**Model used:** Sonnet 4.6
+**Approx cost:** ~$0.005
 
 ---
 

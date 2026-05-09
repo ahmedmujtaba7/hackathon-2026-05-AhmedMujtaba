@@ -114,18 +114,22 @@ backend/
 ## Game rules (encode as invariants, not just docs)
 - One hint per case. `HintService.requestHint()` must throw `HintAlreadyUsedError` if a hint was already issued for this game session.
 - Coin costs: Easy = 50, Medium = 100, Hard = 200. Deducted at case start before generation.
-- Coin rewards on WIN: Easy = 150, Medium = 300, Hard = 200. On loss: no reward, cost already deducted.
-- Timer: Easy = 25 min, Medium = 35 min, Hard = 55 min. Timer starts CLIENT-SIDE after user clicks "Begin Investigation" in the CaseFileBook. Auto-submit on expiry counts as a loss.
+- Coin rewards on WIN (flat 3× return): Easy = 150 (+100 net), Medium = 300 (+200 net), Hard = **600** (+400 net). On loss: no reward, cost already deducted. (Hard was 200 — fixed in polish wave 3 because zero net profit on the hardest tier was broken UX.)
+- Timer: Easy = 25 min, Medium = 35 min, Hard = 55 min. Timer is **server-set** by `POST /case/:sessionId/begin` — the player calls this when they click "Begin Investigation" in `CaseFileBook`, and the backend resets `expiresAt = now + difficulty_ms` so reading time doesn't burn budget. Idempotent — re-clicks compare `startedAt` vs `createdAt` (5 s tolerance) and return the existing `expiresAt` instead of extending the timer. Auto-submit on expiry counts as a loss.
 - Suspects & Witnesses: AI generates both in the `suspects` array. Suspects have `role: 'suspect'`, witnesses have `role: 'witness'`. `sanitizeCase` splits them into separate `suspects` and `witnesses` arrays in the public response. Both carry a `gender: 'male' | 'female'` field for TTS voice selection.
-- Case diversity: `buildCaseGenerationPrompt` picks a random setting from 24+ options and enforces culturally diverse, non-generic character names.
+- Case diversity: `buildCaseGenerationPrompt` picks a random setting from a **48-entry SETTINGS pool** + a 12-entry DEATH_SEEDS pool + a random entropy token (`Math.random + Date.now`). Sampler hyperparameters: `temperature: 1.15`, `top_p: 0.95`. Hint generation also uses an entropy token, a 10-entry HINT_OPENERS pool, `temperature: 1.0`, `top_p: 0.95`. Enforces culturally diverse, non-generic names.
+- Difficulty design rules (in `case-generation.prompt.ts`):
+  - **Easy** is the on-ramp: murderer's `why_suspect` is glaring on its own; alibi has obvious internal contradiction; both witnesses volunteer the contradiction without prompting; ≥3 initial evidence items with ≥2 pointing clearly at the murderer; motive is simplest possible. Heuristic: "a child detective could solve this with 2 questions". 0 red herrings.
+  - **Medium**: 4 suspects + 2 witnesses, 1 red herring, partially-true murderer alibi.
+  - **Hard**: 6 suspects + 3 witnesses, ≥2 red herrings, seemingly-perfect murderer alibi disprovable only by cross-referencing two suspects + one witness.
 - Starter balance: 1 000 coins granted on first Google login only.
 
 ## Voice / audio architecture
 - **Ambient audio** (`audio.ts` + `audio-context.tsx`): Web Audio API engine. `startAmbient()` warms up the AudioContext only — no rain or wind layers. Thunder is canvas-synced: `NoirBackground` calls `playThunderClap()` (exported from `audio.ts`) 0.8–3.5 s after each lightning flash.
 - **Background music** (`audio-context.tsx` → `frontend/public/music/mystery-thriller.mp3`): a looping HTMLAudioElement managed by `AudioProvider`. Plays on the landing / dashboard pages. Volume hardcoded at `0.32` so it never overpowers TTS or SFX. **Stopped at the moment the user clicks "Begin Investigation" on `/game/new`** (`stopMusic()` + `stopAmbient()` fire alongside `phCapture('case_started')` *before* navigation) — this covers the cinematic generation overlay and persists silence through the entire game session (case file → interrogation → verdict). Music resumes on unmount of `/game/[sessionId]` when the player returns to the dashboard or result page. The mute button in the header also pauses/resumes music. Browsers block autoplay until first user interaction — `AudioProvider` waits for the first `click`/`keydown` then starts both ambient and music; `play()` rejections are silently swallowed.
 - **SFX** (`audio.ts`): click, hover, send, receive, coin, win, lose, timerWarning — all procedurally generated, played through master gain node.
-- **TTS output** (`tts.ts`): Web Speech API. `getCharacterVoice(name, role, gender?)` selects gender-specific browser voices (`getBestFemaleVoice()` / `getBestMaleVoice()`) and applies deterministic pitch/rate from a djb2 hash of the character's name. Volume is hardcoded at 1.0. The game page mutes ambient (`stopAmbient()`) so TTS is always clearly audible.
-- **Case file auto-narration**: `CaseFileBook` auto-fires `handleReadAll()` ~900 ms after mount (lets Firefox load voices). The `mm_case_file_autoplay` localStorage key (`'1'` default, `'0'` to opt out) is toggled from the file's top bar via the `Auto` button. The `Stop` button still mutes the current playback without changing the persistent preference.
+- **TTS output** (`tts.ts`): Web Speech API. `getCharacterVoice(name, role, gender?)` selects gender-specific browser voices (`getBestFemaleVoice()` / `getBestMaleVoice()`) and applies deterministic pitch/rate from a djb2 hash of the character's name. Volume is hardcoded at 1.0. The game page mutes ambient (`stopAmbient()`) so TTS is always clearly audible. **Narration pace** is tuned for comprehension: `NARRATOR_VOICE.rate = 0.88` (case-file pages), `STORY_VOICE.rate = 0.85` (full briefing) — slow enough to follow while reading.
+- **Case file auto-narration**: `CaseFileBook` auto-fires `handleReadAll()` ~900 ms after mount (lets Firefox load voices) — but **only when the user has opted in**. The `mm_case_file_autoplay` localStorage key defaults to **OFF** (`'1'` to enable). Toggle it from the file's top bar via the `Auto` button. The `Stop` button mutes the current playback without changing the persistent preference. TTS is also stopped on `handleBeginInvestigation` so any in-flight narration is killed when the player commits to gameplay.
 - **Voice INPUT (speech-to-text)** (`interrogation-chat.tsx`): browser-native `window.SpeechRecognition` / `webkitSpeechRecognition` (no API key, no server cost). Mic button next to the chat input transcribes speech into the input field as the user speaks. Hidden on browsers without API support (e.g. Firefox). Auto-stops on send, on unmount, and when TTS playback starts to avoid feedback. Errors surface as a small crimson hint above the input (`'Microphone access denied'`, `'No speech detected'`, …).
 
 ## First-time onboarding
@@ -145,6 +149,13 @@ backend/
   - `dashboard`, `result`, `game/new`, landing → `overflow-y-auto` on their own root (page can scroll if content overflows).
   - `game/[sessionId]` → `overflow-hidden` everywhere; only the chat's internal messages container scrolls (`InterrogationChat`'s `<div className="flex-1 overflow-y-auto …">`). The suspect list also scrolls independently. The page itself, the header, the case-info bar and the accusation button all stay anchored regardless of conversation length.
 - Never re-introduce `min-h-[100dvh]` on a page root — that would let the page grow taller than the viewport and re-introduce the "whole page scrolls when chat is long" bug.
+
+## Dashboard vertical-balance pattern
+The dashboard cannot use `flex-1` on its bottom-most cards (DetectiveBadge in left column, DetectivesNotebook in right column) — on big monitors that flex-grow stretches them into vast empty rectangles. Instead:
+- Content wrapper uses `my-auto` so it sits at natural content height; auto vertical margins distribute spare viewport space evenly above and below.
+- Columns row uses `lg:items-start` so each column sits at its natural content height (the shorter column doesn't get stretched to match the taller one).
+- All cards have natural height (no `flex-1`).
+- The `DetectivesNotebook` component fills the previously-empty bottom-right area with an atmospheric daily-rotating quote (deterministic by date — different every day, never empty).
 
 ## Open questions / known weirdness
 - Crime scene image generation is async and may be slow — the UI shows a placeholder while it loads. This is intentional; do not add a blocking await.

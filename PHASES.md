@@ -15,6 +15,7 @@ Each phase has its own document under `phases/` with: **goal → plan → done �
 | 7 | Polish, animations, demo prep | DONE | [phases/PHASE_7_polish.md](phases/PHASE_7_polish.md) |
 | 8 | Deployment — Vercel + Railway + Postgres | DONE | [phases/PHASE_8_deployment.md](phases/PHASE_8_deployment.md) |
 | 9 | Polish wave 2 — onboarding, fonts, observability, layout fixes | DONE | (this doc, see "Polish wave 2" below) |
+| 10 | Polish wave 3 — bug-fix sprint + playtest tuning | DONE | (this doc, see "Polish wave 3" below) |
 
 ## Polish work completed (Phase 7 highlights — May 8)
 
@@ -52,6 +53,21 @@ Each phase has its own document under `phases/` with: **goal → plan → done �
 | PostHog analytics: 19 typed events, `phIdentify`/`phReset`, autocapture off, dev opt-out, route-aware page_view via Suspense-wrapped provider | DONE |
 | Sentry error monitoring (backend): `instrument.ts` first-import, global `SentryExceptionFilter` with 4xx skip + 5xx scope (user, request, body, http.status), Express error handler hooked, `SENTRY_DSN` set on Railway | DONE |
 | README.md created at repo root — judge-friendly project overview with architecture diagram, tech stack table, quick start, invariants, observability notes | DONE |
+
+## Polish wave 3 — May 9 (bug-fix sprint + playtest tuning)
+
+| Feature | Status |
+|---------|--------|
+| **Timer-start endpoint** (`POST /case/:sessionId/begin`) — resets `expiresAt = now + difficulty_ms` so reading the case file doesn't burn play budget. Idempotency via `startedAt` vs `createdAt` comparison (5 s tolerance) so re-clicks don't extend. Frontend `handleBeginInvestigation` is now async and awaits the call; falls back to `session.expiresAt` on network failure | DONE |
+| **Hard reward fix** — `COIN_REWARDS.hard` 200 → 600 (+400 net, flat 3× return matching Easy/Medium). Was zero net profit before (broken UX). `DIFFICULTY_INFO.hard.reward` synced on the frontend | DONE |
+| **Dashboard bottom-right fill** — Investigation Protocol text scaled up (16→22 px step number, 11→13 px body, padding p-3 → px-5 py-4). New `DetectivesNotebook` component with a daily-rotating noir quote (deterministic by date, never empty), gold rule decorations, attribution + entry counter | DONE |
+| **Auto-narration default OFF** — `mm_case_file_autoplay` localStorage default flipped from `'1'` to `'0'`. Auto-narration now opt-in via the Auto toggle in the case file's top bar. Returning players get a quiet case file by default | DONE |
+| **TTS stops on Begin Investigation** — `handleBeginInvestigation` calls `stopTTS()` so any in-flight narration is killed when the player commits to gameplay | DONE |
+| **Case generation diversity** — Settings pool 24 → 48 (added research vessels, Bollywood film sets, Norwegian fjord cabins, Himalayan base camps, Moroccan riad weddings, etc.). New 12-entry `DEATH_SEEDS` pool (model picks one as the basis, stops defaulting to "blunt force trauma"). Random entropy token (`Math.random + Date.now`) injected into both prompts. Case temp 0.8 → 1.15, `top_p: 0.95`. Hint temp 0.7 → 1.0, `top_p: 0.95`. New 10-entry `HINT_OPENERS` pool. Explicit anti-cliché list (no twins, no missing wills, no reusing common past names) | DONE |
+| **Dashboard vertical-balance on big screens** — `flex-1` removed from `DetectiveBadge` and `DetectivesNotebook`. Content wrapper changed `flex-1 min-h-0` → `my-auto` so dashboard centres vertically on tall monitors. Columns row uses `lg:items-start` so each column sits at its natural content height. No regression on laptop layout | DONE |
+| **Narration speed** — `NARRATOR_VOICE.rate` 1.10 → 0.88 (slowed for comprehension), `STORY_VOICE.rate` 1.00 → 0.85. Players can now follow the briefing while reading without rewinding | DONE |
+| **Easy difficulty rewrite** — Strict new rules: murderer's `why_suspect` must be glaring on its own, alibi has obvious internal contradiction, both witnesses volunteer the contradiction without prompting, ≥3 initial evidence items with ≥2 pointing at the murderer, motive is simplest possible, 0 red herrings, no partially-true alibi, no multi-clue motives. Heuristic at the bottom: *"a child detective could solve this with 2 questions"*. Medium and Hard untouched | DONE |
+| Notion documentation tree (13 pages: PRD + Execution Plan + Visual PRD with 15 mermaid diagrams + Hackathon Checklist + Frontend section ×5 + Backend section ×5) created via Notion MCP | DONE |
 
 ## How to use this
 

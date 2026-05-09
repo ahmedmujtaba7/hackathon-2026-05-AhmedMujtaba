@@ -18,10 +18,11 @@ You step into the role of a 1947 detective. The AI generates a unique murder cas
 |---|---|
 | **Fully AI-generated cases** | Groq's `llama-3.3-70b-versatile` generates the victim, ≥3 suspects with private truths, witnesses, alibis, motives, red herrings, and a full reveal narrative — every game, no templates |
 | **Natural-language interrogation** | The AI takes the suspect's persona, secrets, and conversation history into account and replies in-character. Push the right way and the suspect cracks |
-| **Voice on both sides** | TTS reads the case file and suspect responses in **gender-aware voices** with deterministic per-character pitch. Voice INPUT lets you literally speak your questions to the suspect — no API key, no server cost (Web Speech API) |
-| **Coin economy** | Cases cost coins up front (50 / 100 / 200), reward coins on a win, deduct nothing extra on a loss. All transactions are wrapped in DB transactions in `CoinService` |
-| **Live timer** | 25 / 35 / 55 minutes per difficulty, runs client-side, auto-submits as a loss on expiry |
-| **Hint system** | One hint per case, first-person ("Something about Maria's alibi doesn't sit right…"), enforced by `HintService.requestHint()` throwing `HintAlreadyUsedError` on second call |
+| **Voice on both sides** | TTS reads the case file and suspect responses in **gender-aware voices** with deterministic per-character pitch (paced at `rate: 0.88` for comprehension). Auto-narration is opt-in. Voice INPUT lets you literally speak your questions to the suspect — no API key, no server cost (Web Speech API) |
+| **48 atmospheric settings** | Random per case with a 12-entry death-method seed pool + random entropy token + temperature 1.15 / top_p 0.95 — every game is a fresh setting, no two cases repeat |
+| **Coin economy** | Cases cost coins up front (50 / 100 / 200), reward a flat 3× return on a win (150 / 300 / 600), deduct nothing extra on a loss. All transactions are atomic via DB transactions in `CoinService` |
+| **Live timer** | 25 / 35 / 55 minutes per difficulty. Server-set by `POST /case/:sessionId/begin` only when the player commits to gameplay — reading the case file doesn't burn budget. Idempotent (re-clicks don't extend). Auto-submits as a loss on expiry |
+| **Hint system** | One hint per case, first-person ("Something about Maria's alibi doesn't sit right…"), drawn from a 10-opener pool to vary phrasing across sessions, enforced by `HintService.requestHint()` throwing `HintAlreadyUsedError` on second call |
 | **Verdict reveal** | Win or lose, the actual murderer is revealed by name on a stamped *Classified* dossier card, followed by an AI-written cinematic narrative |
 | **First-time onboarding** | A 5-step skippable welcome tour mounts once on the dashboard, persisted via `localStorage` (`mm_onboarded_v1`) |
 | **Stats tracking** | Wins, losses, win-rate per difficulty stored in `localStorage` and rendered as animated counters and a perf bar chart |
@@ -128,6 +129,7 @@ TEST_JWT=<your-jwt> npm test
 - **Suspect secrets never leak.** `case.service.ts → sanitizeCase()` strips `private_truth`, `alibi_is_true`, `will_crack_if`, `secrets`, and `murderer_id` before sending the case to the frontend. The frontend literally cannot know the answer until verdict submission.
 - **Coins can never go negative.** `CoinService.deduct()` throws `InsufficientCoinsError` inside the same DB transaction that creates the game session — atomic.
 - **One hint per case.** `HintService.requestHint()` throws `HintAlreadyUsedError` on second call, even with race conditions.
+- **Timer is idempotent.** `POST /case/:sessionId/begin` resets `expiresAt = now + difficulty_ms` only on the *first* call (idempotency check via `startedAt` vs `createdAt` with 5 s tolerance). Re-clicks return the existing `expiresAt` without extending — no timer abuse.
 - **Frontend never calls Groq directly.** All AI calls live inside `backend/src/ai/`. The frontend only knows about REST endpoints.
 - **Background music goes silent the moment a case starts.** The new-game button stops both ambient and music tracks before navigation, so the cinematic generation overlay and the entire game session are silent. Music resumes when the player returns to the dashboard.
 

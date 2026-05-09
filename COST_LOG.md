@@ -4,8 +4,8 @@
 | --- | ----------- | -------- | ------------ | ------ | ----- |
 | Thu May 7 | ~$8–12 est. | 2–3 | ~10 | ~$1.00 | Backend foundation: NestJS modules, DB schema, Google OAuth, JWT, 4 AI endpoints, all four prompt templates, Sequelize models + migrations |
 | Fri May 8 | ~$10–15 est. | 3–4 | ~10 | ~$1.20 | Frontend UI, full game loop wiring, TTS all 5 steps, gender-aware voices, noir theme, dashboard, landing page, voice INPUT (free Web Speech), background music, layout invariant fix |
-| Sat May 9 | ~$14–22 est. | 6–7 | ~12 | ~$1.40 | Vercel deployment (3 attempts → root-cause lockfile stub), Railway backend deployment (3 attempts → `/health` endpoint + `railway.json`), Playwright E2E suite (40 tests, 6 suites), PostHog frontend (19 typed events), Sentry backend (global filter + Express handler), polish wave 2 (onboarding tour, font upgrade, murderer reveal, layout fixes), README.md, full MD doc refresh |
-| **Total** | **~$32–49 est.** | 11–14 | **~32** | **~$1.30** | Well under $75/day soft cap; never approached $100/day hard cap |
+| Sat May 9 | ~$18–28 est. | 8–10 | ~14 | ~$1.55 | Vercel deployment (3 attempts → root-cause lockfile stub), Railway backend deployment (3 attempts → `/health` endpoint + `railway.json`), Playwright E2E suite (40 tests, 6 suites), PostHog frontend (19 typed events), Sentry backend (global filter + Express handler), polish wave 2 (onboarding tour, font upgrade, murderer reveal, layout fixes), polish wave 3 (timer-start endpoint, Hard reward fix, dashboard fill, auto-narration off, case diversity), dashboard vertical-balance big-screen fix, narration speed + Easy difficulty rewrite, README.md, full MD doc refresh + Notion mirror |
+| **Total** | **~$36–55 est.** | 13–17 | **~34** | **~$1.40** | Well under $75/day soft cap; never approached $100/day hard cap |
 
 **Soft cap:** $75/day. **Hard cap:** $100/day.
 
@@ -37,6 +37,10 @@
 | Murderer reveal stamped dossier card on result page | ~1 | ~800 | ~$0.003 | Polish wave 2 |
 | Onboarding tour (5 slides, framer-motion, localStorage persistence) | ~1 | ~1 800 | ~$0.006 | Polish wave 2 |
 | Font upgrade — Cinzel + Cormorant Garamond + Outfit + JetBrains Mono | ~1 | ~700 | ~$0.002 | Polish wave 2 |
+| Polish wave 3 composite (5 fixes: timer-start endpoint, Hard reward 200→600, dashboard fill + DetectivesNotebook, auto-narration default OFF, case diversity tuning) | ~1 | ~3 000 | ~$0.022 | Single composite prompt |
+| Dashboard vertical-balance fix on big monitors (`flex-1` removed, `my-auto`, `lg:items-start`) | ~1 | ~900 | ~$0.004 | Polish wave 3 |
+| Narration rate slowed (0.88 / 0.85) + Easy difficulty rule rewrite | ~1 | ~1 800 | ~$0.005 | Playtest-driven |
+| Notion documentation tree (13 pages: PRD + Execution + Visual + Frontend ×5 + Backend ×5 + Hackathon Checklist) | ~5 | ~2 200 | ~$0.025 | Created via Notion MCP, mirrors local `notion/` |
 | **Audio & voice** | | | | |
 | TTS engine + hooks (`tts.ts`, `use-tts.ts`) | ~8 | ~800 | ~$0.010 | |
 | Gender-aware voice selection | ~4 | ~700 | ~$0.004 | |
@@ -58,7 +62,7 @@
 | **Vercel deployment debugging** | ~8 | ~900 | ~$0.012 | 3× "No Next.js version detected" diagnosis; 813-line lockfile stub fix; CVE-2025-66478 upgrade; `.npmrc` legacy-peer-deps; monorepo `vercel.json`; CLI temp-dir deploy with `--archive=tgz` |
 | **Railway backend deployment** | ~5 | ~1 000 | ~$0.008 | "No start command detected" → explicit `railway.json` builder; healthcheck loop → `/health` endpoint via `httpAdapter.get()`; project-token auth (no `railway link`) → manual `.railway/config.json`; FRONTEND_URL mismatch → corrected after OAuth 404 |
 | **`.gitignore` creation + git index clean-up** | ~2 | ~700 | ~$0.002 | Root, frontend, backend gitignores; `git rm --cached .claude/settings.local.json` |
-| **Total (estimate)** | **~140 calls** | — | **~$0.36** | Direct Claude API spend; Groq runtime separate (free tier); PostHog/Sentry/Vercel/Railway free tiers |
+| **Total (estimate)** | **~149 calls** | — | **~$0.42** | Direct Claude API spend; Groq runtime separate (free tier); PostHog/Sentry/Vercel/Railway free tiers |
 
 **Model default:** claude-sonnet-4-6 (every session)
 **Opus used:** Zero times for production code — Sonnet handled all architecture, all UI, all observability work; Opus was logged as an anti-pattern after one over-engineered card component on May 7.
@@ -67,7 +71,7 @@
 **Workflow tools:** Plan mode (3×), parallel tool calls (every multi-file edit), background tasks for long-running deploys (Vercel + Railway).
 
 > **Reconciliation between per-feature column and day totals:**
-> The per-feature column above sums *direct prompt costs* — the literal request that produced a specific feature. Day-row totals also include exploratory plan-mode chats, multi-turn debugging conversations, MCP tool invocations (Vercel deploy MCP, Railway CLI wrapper, GitHub PR creation), and tool-use overhead that resists clean attribution. The $32–49 range is the realistic envelope for the full three-day build; the $0.36 per-feature sum is the floor.
+> The per-feature column above sums *direct prompt costs* — the literal request that produced a specific feature. Day-row totals also include exploratory plan-mode chats, multi-turn debugging conversations, MCP tool invocations (Vercel deploy MCP, Railway CLI wrapper, GitHub PR creation, Notion MCP for the doc tree), and tool-use overhead that resists clean attribution. The $36–55 range is the realistic envelope for the full three-day build; the $0.42 per-feature sum is the floor.
 
 ---
 
@@ -114,3 +118,6 @@ On Groq's free tier these are **$0**. On the paid tier at ~$0.59/M tokens for `l
 - Deployment debugging is more cost-efficient when you state the *symptom and observed root cause together*. The Vercel lockfile fix landed in one prompt after I included `wc -l package-lock.json` output (`813` lines vs the expected 6 K+).
 - Adding `instrument.ts` as the first import of `main.ts` for Sentry — and **always** calling out import ordering as a hard requirement in the prompt — prevents subtle "Sentry is initialised but doesn't capture anything" silent failures.
 - For PostHog in Next.js App Router, the provider must be wrapped in `<Suspense>` because `useSearchParams()` is asynchronous. Building once, getting a clear error, and asking Claude with the exact stack trace yielded a one-shot fix.
+- Generation diversity is a *two-lever* problem: prompt rules (qualitative — settings pool, anti-cliché list, `will_crack_if` constraints) and sampler hyperparameters (quantitative — temperature 1.15, top_p 0.95, entropy token). Each addresses a different failure mode and they compose cleanly. Solving only one is half a fix.
+- For game-balance feedback (e.g. "Easy is too hard"), encode the *qualitative target* directly in the prompt as a self-test heuristic. *"A child detective could solve this with 2 questions"* gave the model an unambiguous check it could perform on its own output before returning.
+- `flex-1` on the bottom-most card of a flex column is fine on laptop viewports but stretches into empty rectangles on big monitors. The reliable fix is `my-auto` on the content wrapper + `lg:items-start` on the columns row + natural-height cards. Verifying the four-line swap mentally before committing prevents a regression cycle.

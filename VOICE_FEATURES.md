@@ -67,13 +67,19 @@ No Groq API calls are made for voice. All audio is generated/recognised on the u
 - The header mute button toggles music alongside the rest of the audio system.
 - Lazily creates the `<audio>` element, gated on first user click/keypress per browser autoplay rules.
 
-### Req 5 — Auto-narrate Case File on Open — DONE May 8
+### Req 5 — Auto-narrate Case File on Open — DONE May 8 (default ON), revised May 9 (default OFF, opt-in)
 - When `CaseFileBook` mounts, after a 900 ms delay (so Firefox has time to populate the voices list),
-  `handleReadAll()` auto-fires and narrates the whole file Cover → Witnesses → Begin.
-- Persistent preference: `mm_case_file_autoplay` localStorage key (`'1'` default, `'0'` to opt out).
+  `handleReadAll()` auto-fires and narrates the whole file Cover → Witnesses → Begin — **but only when the user has opted in**.
+- Persistent preference: `mm_case_file_autoplay` localStorage key — **default OFF** (must be `'1'` to enable). Flipped from default-ON to default-OFF in polish wave 3 because returning players found re-narration on every game-start jarring; first-time players still get a guided experience via the OnboardingTour modal.
 - An **`Auto` toggle** in the file's top bar flips the persistent preference (gold when on, dim when off).
-- The existing **`Stop` button** still mutes the current playback without changing the persistent preference.
+- The existing **`Stop` button** mutes the current playback without changing the persistent preference.
+- TTS is also cancelled when the player clicks **Begin Investigation** (in the case file book) — `handleBeginInvestigation` calls `stopTTS()` so any in-flight narration is killed when the player commits to gameplay.
 - TTS is cancelled cleanly on unmount.
+
+### Req 5b — Narration pacing — DONE May 9 (playtest tuning)
+- `NARRATOR_VOICE.rate` set to **0.88** (case-file pages) — slowed from initial 1.10 because players couldn't follow the briefing while reading. Comment in code documents the trade-off.
+- `STORY_VOICE.rate` set to **0.85** (full case briefing / interrogation responses) — slowed from initial 1.00.
+- Pitch deliberately untouched (still uses djb2 hash of character name for deterministic per-character variation). Volume hardcoded at 1.0.
 
 ---
 
