@@ -223,7 +223,7 @@ export default function LandingPage() {
       `}</style>
 
       <div
-        className="flex-1 relative flex flex-col items-center justify-center overflow-y-auto min-h-0"
+        className="flex-1 relative flex flex-col items-center overflow-y-auto min-h-0"
         onMouseMove={handleMouseMove}
       >
         {/* Top gold accent line */}
@@ -321,7 +321,7 @@ export default function LandingPage() {
 
         {/* Main content */}
         <motion.div
-          className="relative flex flex-col items-center text-center px-4 sm:px-6 max-w-2xl w-full mx-auto"
+          className="relative flex flex-col items-center text-center px-4 sm:px-6 max-w-2xl w-full mx-auto my-auto py-10 sm:py-14"
           style={{ x: titleX, y: titleY, zIndex: 10 }}
         >
           {/* Eyebrow */}
@@ -329,7 +329,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: EASE }}
-            className="flex items-center gap-3 mb-10"
+            className="flex items-center gap-3 mb-6 sm:mb-10"
           >
             <div className="h-px w-16 bg-gradient-to-r from-transparent to-accent/50" />
             <span className="font-mono text-accent/70 text-[10px] tracking-[0.45em] uppercase">
@@ -339,7 +339,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Main title — staggered blur-in from alternating sides */}
-          <div className="mb-8 space-y-1">
+          <div className="mb-4 sm:mb-8 space-y-1">
             {(['MURDER', 'MYSTERY', 'DETECTIVE'] as const).map((word, i) => (
               <motion.div
                 key={word}
@@ -380,7 +380,7 @@ export default function LandingPage() {
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 0.8, delay: 0.8, ease: EASE }}
-            className="w-32 h-px my-8"
+            className="w-32 h-px my-5 sm:my-8"
             style={{
               background:
                 'linear-gradient(to right, transparent, rgba(201,162,39,0.6), transparent)',
@@ -402,7 +402,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 1.15, ease: EASE }}
-            className="font-mono text-muted/70 text-sm leading-loose mb-10 max-w-lg tracking-wide"
+            className="font-mono text-muted/70 text-sm leading-loose mb-6 sm:mb-10 max-w-lg tracking-wide"
           >
             The city never sleeps, and neither do its secrets. Step into a world of shadows and
             half-truths where each interrogation brings you closer — or further — from the truth.
@@ -423,7 +423,7 @@ export default function LandingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 1.55 }}
-            className="w-full mt-10 flex flex-col sm:flex-row gap-3"
+            className="w-full mt-6 sm:mt-10 flex flex-col sm:flex-row gap-3"
           >
             <FeatureCard
               label="◆ AI Suspects"
@@ -447,7 +447,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.9, ease: EASE }}
-            className="mt-8 sm:mt-10 grid grid-cols-3 gap-4 sm:flex sm:items-center sm:gap-10 w-full sm:w-auto"
+            className="mt-5 sm:mt-8 grid grid-cols-3 gap-4 sm:flex sm:items-center sm:gap-10 w-full sm:w-auto"
           >
             <StatItem value="∞" label="Unique Cases" />
             <StatItem value="AI" label="Powered" />
@@ -459,7 +459,7 @@ export default function LandingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 2.1 }}
-            className="mt-8 flex items-center gap-4"
+            className="mt-5 sm:mt-8 flex items-center gap-4"
           >
             <div className="h-px w-12 bg-border" />
             <span className="font-mono text-muted/40 text-[10px] tracking-[0.4em] uppercase">
