@@ -192,17 +192,19 @@ export function getCharacterVoice(
   };
 }
 
-/** Narrator voice (case file pages) */
+/** Narrator voice (case file pages) — paced for comprehension, not speed.
+ *  Lowered from 1.10 → 0.88 so players can follow the briefing while reading. */
 export const NARRATOR_VOICE: TTSOptions = {
   pitch:  0.95,
-  rate:   1.10,   // brisk and clear — faster at user request
+  rate:   0.88,
   volume: 1.0,
 };
 
-/** Dramatic pace for the full case narrative */
+/** Dramatic pace for the full case narrative — slowed so the player has time
+ *  to absorb victim, scene, and suspect details without rewinding. */
 export const STORY_VOICE: TTSOptions = {
   pitch:  0.90,
-  rate:   1.00,   // natural pace for the briefing story
+  rate:   0.85,
   volume: 1.0,
 };
 

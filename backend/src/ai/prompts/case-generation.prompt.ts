@@ -90,13 +90,51 @@ function entropyToken(): string {
 
 export function buildCaseGenerationPrompt(difficulty: string): string {
   const difficultyRules: Record<string, string> = {
-    easy: `DIFFICULTY: Easy
+    easy: `DIFFICULTY: Easy — A BEGINNER-FRIENDLY CASE.
+This is the on-ramp difficulty. The player is new. The case must be SOLVABLE
+with just 2–3 well-chosen questions. Treat this as a tutorial.
+
+CAST:
 - Generate exactly 3 suspects plus 2 alibi witnesses (role: "witness").
-- The murderer should have made at least one obvious mistake (a contradiction in their alibi, a witnessed argument with the victim, or physical evidence left behind).
-- Include 0 red herrings. Every clue should point meaningfully toward the truth.
-- The alibi_is_true field for the murderer must be false, and their alibi should be easy to disprove.
-- Make the motive straightforward (money, jealousy, revenge) and clearly implied by the suspects' backgrounds.
-- At least one alibi witness can directly contradict the murderer's story if questioned.`,
+
+THE MURDERER MUST BE OBVIOUS — apply ALL of these:
+- The murderer's "why_suspect" field must be glaring on its own (e.g., "Was caught
+  on camera entering the victim's room minutes before the death", "Has the victim's
+  blood on their cuff", "Was screaming threats at the victim hours before", "Was
+  the only person with a key to the locked room").
+- The murderer's alibi_is_true must be false AND their alibi must contain an
+  obvious internal contradiction or be easily disprovable by ONE simple question
+  (e.g., they claim to have been in a place that was demonstrably locked / empty /
+  on fire / under construction at that time).
+- The murderer's "will_crack_if" must be a SHORT, specific, easy-to-think-of
+  question (e.g., "asked directly about the broken window", "asked where they
+  were at 9pm", "shown the cigarette butt").
+- BOTH alibi witnesses must independently contradict the murderer's story if
+  asked even basic questions about the relevant time window. They should
+  volunteer the contradiction without prompting.
+- The "initial_evidence" array must contain at least 3 specific items, and at
+  least 2 of them must point clearly toward the murderer (their personal item,
+  their fingerprint, their footprint, etc.).
+- The motive must be the simplest possible: direct money, immediate jealousy,
+  or open revenge. NOT layered or hidden.
+
+SUSPECT DESIGN (keep it CLEAN):
+- The two innocent suspects must have alibis that are TRUE (alibi_is_true = true)
+  and easily corroborated.
+- Innocent suspects should have minor secrets that are CLEARLY unrelated to the
+  murder (e.g., embezzlement at work, a private affair) so they don't muddy the
+  trail.
+
+ABSOLUTELY NO:
+- Red herrings (red_herrings array must be EMPTY).
+- Innocent suspects who look guilty.
+- The murderer having a partially-true alibi.
+- Motives that require piecing multiple clues together.
+- Witnesses with conflicting accounts.
+
+If a child detective could solve this with 2 questions, the difficulty is right.
+If the player has to cross-reference more than two pieces of information, you've
+made it too hard.`,
 
     medium: `DIFFICULTY: Medium
 - Generate exactly 4 suspects plus 2 alibi witnesses (role: "witness").
