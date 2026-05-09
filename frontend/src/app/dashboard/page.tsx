@@ -232,7 +232,7 @@ function DetectiveBadge({
   return (
     <motion.div
       {...fadeUp(0.22)}
-      className="relative rounded-xl px-4 py-3 overflow-hidden flex-1 flex flex-col gap-2.5"
+      className="relative rounded-xl px-4 py-3 overflow-hidden flex flex-col gap-2.5"
       style={{
         background: 'linear-gradient(160deg, rgba(28,22,14,0.97) 0%, rgba(14,10,8,0.97) 100%)',
         border: '1px solid rgba(201,162,39,0.30)',
@@ -366,7 +366,7 @@ function DetectivesNotebook() {
   return (
     <motion.div
       {...fadeUp(0.34)}
-      className="relative rounded-xl px-5 py-4 flex-1 min-h-0 flex flex-col justify-center overflow-hidden"
+      className="relative rounded-xl px-5 py-4 flex flex-col overflow-hidden"
       style={{
         background:
           'linear-gradient(160deg, rgba(22,18,12,0.95) 0%, rgba(12,10,8,0.95) 100%)',
@@ -461,8 +461,21 @@ export default function DashboardPage() {
     <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
       {/* First-time onboarding tour — shows once per browser, skippable */}
       <OnboardingTour />
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-5 py-3 sm:py-4 flex flex-col gap-3 flex-1 min-h-0">
-        <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0">
+      {/*
+        Layout strategy:
+        - Page wrapper above is `overflow-y-auto` so anything taller than the
+          viewport scrolls naturally.
+        - This content wrapper uses `my-auto` instead of `flex-1` — that means
+          it sits at its natural content height, and on viewports taller than
+          the content (large monitors) the `auto` vertical margin distributes
+          spare space evenly above and below, vertically centring the dashboard.
+        - On laptop-class viewports the content fills the height naturally with
+          no margin, matching the prior tight-fit layout.
+      */}
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-5 py-3 sm:py-4 flex flex-col gap-3 my-auto">
+        {/* `lg:items-start` keeps each column at its natural content height —
+            no card stretches just to match the taller column. */}
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-start">
 
           {/* ── LEFT COLUMN ───────────────────────────────────────── */}
           <div className="flex flex-col gap-3 lg:w-[40%] xl:w-[38%]">
